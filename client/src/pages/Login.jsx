@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import FormInput from '../components/forms/FormInput';
+import ErrorMessage from '../components/forms/ErrorMessage';
+import Button from '../components/common/Button';
 import '../styles/Auth.css';
 
 const Login = () => {
@@ -30,28 +33,24 @@ const Login = () => {
 
                 <h2>Login</h2>
                 <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label htmlFor="email">Email</label>
-                        <input
-                            type="email"
-                            id="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor="password">Password</label>
-                        <input
-                            type="password"
-                            id="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-                    {error && <div className="error-message">{error}</div>}
-                    <button type="submit" className="btn-primary">Login</button>
+                    <FormInput
+                        label="Email"
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                    <FormInput
+                        label="Password"
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+                    <ErrorMessage message={error} />
+                    <Button type="submit" variant="primary">Login</Button>
                 </form>
                 <p className="switch-auth">
                     Don't have an account? <Link to="/register">Register</Link>

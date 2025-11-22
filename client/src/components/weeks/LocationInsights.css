@@ -1,0 +1,19 @@
+.location-insights {
+  margin-bottom: 32px;
+  background: var(--light-gray);
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.location-insights h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: var(--dark);
+}
+
+.location-insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+}
+

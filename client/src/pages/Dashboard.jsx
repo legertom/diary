@@ -4,7 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import AudioRecorder from '../components/AudioRecorder';
 import AppHeader from '../components/common/AppHeader';
 import Button from '../components/common/Button';
-import EmptyState from '../components/common/EmptyState';
+import WeekStatus from '../components/dashboard/WeekStatus';
+import EntriesList from '../components/entries/EntriesList';
 import apiClient from '../api/apiClient';
 import '../styles/Dashboard.css';
 
@@ -73,10 +74,21 @@ const Dashboard = () => {
         console.log('✅ Dashboard refreshed');
     };
 
-    const formatDuration = (seconds) => {
-        const mins = Math.floor(seconds / 60);
-        const secs = Math.floor(seconds % 60);
-        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    const handleGenerateReflection = async () => {
+        if (!confirm('Generate reflection for this week now? This is for testing purposes.')) return;
+        try {
+            const weeksRes = await apiClient.get(`/weeks?userId=${user.id}`);
+            if (weeksRes.data.weeks.length > 0) {
+                const weekId = weeksRes.data.weeks[0]._id;
+                alert('Generating reflection... This may take a minute.');
+                await apiClient.post(`/weeks/${weekId}/generate-reflection`);
+                alert('Reflection generated! Check the Reflections page.');
+                loadWeekStatus();
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error generating reflection: ' + (err.response?.data?.error || err.message));
+        }
     };
 
     return (
@@ -88,85 +100,21 @@ const Dashboard = () => {
             </AppHeader>
 
             <main>
-                <div className="week-status">
-                    <h2>This Week</h2>
-                    <div className="stats">
-                        <div className="stat">
-                            <span className="stat-label">Entries</span>
-                            <span className="stat-value">{entryCount}</span>
-                        </div>
-                        <div className="stat">
-                            <span className="stat-label">Next Reflection</span>
-                            <span className="stat-value">{nextReflection || 'Loading...'}</span>
-                        </div>
-                    </div>
-                    <div style={{ marginTop: '15px', textAlign: 'center' }}>
-                        <Button
-                            variant="secondary"
-                            onClick={async () => {
-                                if (!confirm('Generate reflection for this week now? This is for testing purposes.')) return;
-                                try {
-                                    const weeksRes = await apiClient.get(`/weeks?userId=${user.id}`);
-                                    if (weeksRes.data.weeks.length > 0) {
-                                        const weekId = weeksRes.data.weeks[0]._id;
-                                        alert('Generating reflection... This may take a minute.');
-                                        await apiClient.post(`/weeks/${weekId}/generate-reflection`);
-                                        alert('Reflection generated! Check the Reflections page.');
-                                        loadWeekStatus();
-                                    }
-                                } catch (err) {
-                                    console.error(err);
-                                    alert('Error generating reflection: ' + (err.response?.data?.error || err.message));
-                                }
-                            }}
-                            style={{
-                                fontSize: '0.8rem',
-                                padding: '6px 12px',
-                                borderRadius: '20px'
-                            }}
-                        >
-                            ⚡ Generate Reflection (Dev)
-                        </Button>
-                    </div>
-                </div>
+                <WeekStatus 
+                    user={user}
+                    entryCount={entryCount}
+                    onGenerateReflection={handleGenerateReflection}
+                />
 
                 <AudioRecorder onRecordingComplete={handleRecordingComplete} />
 
                 <div className="entries-section">
                     <h3>This Week's Entries</h3>
-                    <div className="entries-list">
-                        {entries.length === 0 ? (
-                            <EmptyState 
-                                message="No entries yet. Start recording to begin your week!"
-                                icon="🎙️"
-                            />
-                        ) : (
-                            entries.map(entry => {
-                                const date = new Date(entry.recordedAt);
-                                const dateStr = date.toLocaleDateString('en-US', {
-                                    weekday: 'long',
-                                    month: 'short',
-                                    day: 'numeric'
-                                });
-                                const timeStr = date.toLocaleTimeString('en-US', {
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                });
-                                const locationDisplay = entry.location?.address
-                                    ? `• ${entry.location.address}`
-                                    : (entry.location ? '📍' : '');
-
-                                return (
-                                    <div key={entry._id} className="entry-card">
-                                        <div className="entry-info">
-                                            <div className="entry-date">{dateStr} at {timeStr} {locationDisplay}</div>
-                                            <div className="entry-duration">{formatDuration(entry.duration)}</div>
-                                        </div>
-                                    </div>
-                                );
-                            })
-                        )}
-                    </div>
+                    <EntriesList 
+                        entries={entries}
+                        emptyMessage="No entries yet. Start recording to begin your week!"
+                        emptyIcon="🎙️"
+                    />
                 </div>
 
                 <div className="nav-section">

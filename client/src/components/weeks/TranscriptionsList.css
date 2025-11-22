@@ -1,0 +1,27 @@
+.transcriptions-list {
+  margin-bottom: 32px;
+}
+
+.transcriptions-list h3 {
+  margin-bottom: 16px;
+  color: var(--dark);
+}
+
+.transcription-item {
+  background: var(--light-gray);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.transcription-header {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--dark);
+}
+
+.transcription-text {
+  line-height: 1.6;
+  color: var(--gray);
+}
+

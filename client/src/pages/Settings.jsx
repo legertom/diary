@@ -3,6 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AppHeader from '../components/common/AppHeader';
 import Button from '../components/common/Button';
+import FormInput from '../components/forms/FormInput';
+import FormSelect from '../components/forms/FormSelect';
+import ErrorMessage from '../components/forms/ErrorMessage';
+import SuccessMessage from '../components/forms/SuccessMessage';
 import apiClient from '../api/apiClient';
 import '../styles/Settings.css';
 
@@ -88,17 +92,14 @@ const Settings = () => {
             <main className="settings-main">
                 <div className="settings-card">
                     <form onSubmit={handleSubmit}>
-                        <div className="form-group">
-                            <label htmlFor="name">Display Name</label>
-                            <input
-                                type="text"
-                                id="name"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleChange}
-                                required
-                            />
-                        </div>
+                        <FormInput
+                            label="Display Name"
+                            id="name"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            required
+                        />
 
                         <div className="form-section">
                             <h3>Reflection Schedule</h3>
@@ -107,36 +108,27 @@ const Settings = () => {
                                 Changing this will adjust your current week's cycle.
                             </p>
 
-                            <div className="form-group">
-                                <label htmlFor="reflectionDay">Weekly Reflection Day</label>
-                                <select
-                                    id="reflectionDay"
-                                    name="reflectionDay"
-                                    value={formData.reflectionDay}
-                                    onChange={handleChange}
-                                >
-                                    {days.map(day => (
-                                        <option key={day.value} value={day.value}>
-                                            {day.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                            <FormSelect
+                                label="Weekly Reflection Day"
+                                id="reflectionDay"
+                                name="reflectionDay"
+                                value={formData.reflectionDay}
+                                onChange={handleChange}
+                                options={days}
+                            />
 
-                            <div className="form-group">
-                                <label htmlFor="reflectionTime">Time (Local)</label>
-                                <input
-                                    type="time"
-                                    id="reflectionTime"
-                                    name="reflectionTime"
-                                    value={formData.reflectionTime}
-                                    onChange={handleChange}
-                                />
-                            </div>
+                            <FormInput
+                                label="Time (Local)"
+                                id="reflectionTime"
+                                name="reflectionTime"
+                                type="time"
+                                value={formData.reflectionTime}
+                                onChange={handleChange}
+                            />
                         </div>
 
-                        {message && <div className="success-message">{message}</div>}
-                        {error && <div className="error-message">{error}</div>}
+                        <SuccessMessage message={message} />
+                        <ErrorMessage message={error} />
 
                         <div className="form-actions">
                             <Button type="submit" variant="primary" disabled={loading}>

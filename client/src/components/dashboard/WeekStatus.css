@@ -1,0 +1,20 @@
+.week-status {
+  margin-bottom: 32px;
+}
+
+.week-status h2 {
+  margin-bottom: 16px;
+  color: var(--dark);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.week-status-actions {
+  margin-top: 15px;
+  text-align: center;
+}
+

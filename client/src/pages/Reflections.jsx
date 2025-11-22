@@ -5,6 +5,9 @@ import AppHeader from '../components/common/AppHeader';
 import Button from '../components/common/Button';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import EmptyState from '../components/common/EmptyState';
+import Modal from '../components/common/Modal';
+import WeekCard from '../components/weeks/WeekCard';
+import WeekDetail from '../components/weeks/WeekDetail';
 import apiClient from '../api/apiClient';
 import '../styles/Reflections.css';
 
@@ -68,193 +71,20 @@ const Reflections = () => {
                             icon="📔"
                         />
                     ) : (
-                        weeks.map(week => {
-                            const startDate = new Date(week.weekStart).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric'
-                            });
-                            const endDate = new Date(week.weekEnd).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric'
-                            });
-                            const statusClass = week.status === 'complete' ? 'complete' : 'recording';
-                            const statusText = week.status === 'complete' ? 'Complete' : 'In Progress';
-                            const summary = week.insights?.moodTrend
-                                ? `Mood: ${week.insights.moodTrend}`
-                                : 'Reflection pending...';
-
-                            return (
-                                <div
-                                    key={week._id}
-                                    className="week-card"
-                                    onClick={() => viewWeek(week._id)}
-                                >
-                                    <div className="week-header">
-                                        <div className="week-title">Week of {startDate} - {endDate}</div>
-                                        <div className={`week-status-badge ${statusClass}`}>{statusText}</div>
-                                    </div>
-                                    <div className="week-summary">{summary}</div>
-                                </div>
-                            );
-                        })
+                        weeks.map(week => (
+                            <WeekCard
+                                key={week._id}
+                                week={week}
+                                onClick={() => viewWeek(week._id)}
+                            />
+                        ))
                     )}
                 </div>
 
-                {selectedWeek && (
-                    <div className="modal" onClick={(e) => e.target.className === 'modal' && closeModal()}>
-                        <div className="modal-content">
-                            <button className="modal-close" onClick={closeModal}>×</button>
-                            <WeekDetail week={selectedWeek} entries={entries} />
-                        </div>
-                    </div>
-                )}
+                <Modal isOpen={!!selectedWeek} onClose={closeModal}>
+                    {selectedWeek && <WeekDetail week={selectedWeek} entries={entries} />}
+                </Modal>
             </main>
-        </div>
-    );
-};
-
-const WeekDetail = ({ week, entries }) => {
-    const startDate = new Date(week.weekStart).toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric'
-    });
-    const endDate = new Date(week.weekEnd).toLocaleDateString('en-US', {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric'
-    });
-
-    return (
-        <div>
-            <h2>Week of {startDate} - {endDate}</h2>
-            <p style={{ color: 'var(--gray)', marginBottom: '24px' }}>{entries.length} entries</p>
-
-            {week.status === 'complete' && week.insights ? (
-                <>
-                    {week.summary && (
-                        <div style={{ marginBottom: '32px' }}>
-                            <h3>Weekly Summary</h3>
-                            <p style={{ lineHeight: 1.6, color: 'var(--dark)' }}>{week.summary}</p>
-                        </div>
-                    )}
-
-                    <div style={{ marginBottom: '32px' }}>
-                        <h3>Mood Trend</h3>
-                        <p style={{ fontSize: '1.25rem', color: 'var(--primary)', fontWeight: 600 }}>
-                            {week.insights.moodTrend}
-                        </p>
-                    </div>
-
-                    {week.insights.keyThemes && week.insights.keyThemes.length > 0 && (
-                        <div style={{ marginBottom: '32px' }}>
-                            <h3>Key Themes</h3>
-                            <ul style={{ listStyle: 'none', padding: 0 }}>
-                                {week.insights.keyThemes.map((theme, i) => (
-                                    <li key={i} style={{ padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
-                                        {theme}
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-
-                    {week.insights.highlights && week.insights.highlights.length > 0 && (
-                        <div style={{ marginBottom: '32px' }}>
-                            <h3>Highlights</h3>
-                            <ul style={{ listStyle: 'disc', paddingLeft: '20px', lineHeight: 1.8 }}>
-                                {week.insights.highlights.map((highlight, i) => (
-                                    <li key={i}>{highlight}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-
-                    {week.insights.locationInsights && (
-                        <div style={{
-                            marginBottom: '32px',
-                            background: 'var(--light-gray)',
-                            padding: '20px',
-                            borderRadius: '12px'
-                        }}>
-                            <h3>Movement & Location Insights</h3>
-                            <div style={{
-                                display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-                                gap: '16px',
-                                marginTop: '16px'
-                            }}>
-                                <div>
-                                    <div style={{ fontSize: '0.875rem', color: 'var(--gray)' }}>Unique Locations</div>
-                                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary)' }}>
-                                        {week.insights.locationInsights.totalUniqueLocations}
-                                    </div>
-                                </div>
-                                <div>
-                                    <div style={{ fontSize: '0.875rem', color: 'var(--gray)' }}>Distance Traveled</div>
-                                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary)' }}>
-                                        {week.insights.locationInsights.distanceTraveled.toFixed(1)} km
-                                    </div>
-                                </div>
-                                <div>
-                                    <div style={{ fontSize: '0.875rem', color: 'var(--gray)' }}>Mobility Score</div>
-                                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary)' }}>
-                                        {week.insights.locationInsights.mobilityScore}/100
-                                    </div>
-                                </div>
-                                <div>
-                                    <div style={{ fontSize: '0.875rem', color: 'var(--gray)' }}>Time at Home</div>
-                                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--primary)' }}>
-                                        {week.insights.locationInsights.timeAtHome}%
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {week.transcriptions && week.transcriptions.length > 0 && (
-                        <div style={{ marginBottom: '32px' }}>
-                            <h3>Transcriptions</h3>
-                            {week.transcriptions.map((t, index) => {
-                                const date = new Date(t.recordedAt);
-                                const dateStr = date.toLocaleDateString('en-US', {
-                                    weekday: 'long',
-                                    month: 'short',
-                                    day: 'numeric'
-                                });
-                                const timeStr = date.toLocaleTimeString('en-US', {
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                });
-
-                                return (
-                                    <div
-                                        key={index}
-                                        style={{
-                                            background: 'var(--light-gray)',
-                                            padding: '16px',
-                                            borderRadius: '8px',
-                                            marginBottom: '12px'
-                                        }}
-                                    >
-                                        <div style={{ fontWeight: 600, marginBottom: '8px', color: 'var(--dark)' }}>
-                                            Entry {index + 1} - {dateStr} at {timeStr} {t.location?.address ? `• ${t.location.address}` : ''}
-                                        </div>
-                                        <div style={{ lineHeight: 1.6, color: 'var(--gray)' }}>
-                                            {t.text}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </>
-            ) : (
-                <div style={{ textAlign: 'center', padding: '48px', color: 'var(--gray)' }}>
-                    <p>Reflection for this week is still in progress.</p>
-                    <p style={{ marginTop: '12px' }}>Check back after your reflection day!</p>
-                </div>
-            )}
         </div>
     );
 };
