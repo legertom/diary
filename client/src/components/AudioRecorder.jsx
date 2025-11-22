@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import apiClient from '../api/apiClient';
 
 const AudioRecorder = ({ onRecordingComplete }) => {
     const [isRecording, setIsRecording] = useState(false);
@@ -232,13 +232,10 @@ const AudioRecorder = ({ onRecordingComplete }) => {
             formData.append('location', JSON.stringify(currentLocationRef.current));
         }
 
-        const token = localStorage.getItem('token');
-
         try {
             console.log('Sending POST request to /api/entries...');
-            const response = await axios.post('http://localhost:3000/api/entries', formData, {
+            const response = await apiClient.post('/entries', formData, {
                 headers: {
-                    Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
                 }
             });

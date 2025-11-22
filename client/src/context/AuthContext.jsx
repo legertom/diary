@@ -1,5 +1,5 @@
 import { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
+import apiClient from '../api/apiClient';
 
 const AuthContext = createContext(null);
 
@@ -16,13 +16,18 @@ export const AuthProvider = ({ children }) => {
     const [token, setToken] = useState(localStorage.getItem('token'));
     const [loading, setLoading] = useState(true);
 
+    const logout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setToken(null);
+        setUser(null);
+    };
+
     useEffect(() => {
         const fetchUser = async () => {
             if (token) {
                 try {
-                    const response = await axios.get('http://localhost:3000/api/auth/me', {
-                        headers: { Authorization: `Bearer ${token}` }
-                    });
+                    const response = await apiClient.get('/auth/me');
                     if (response.data.success) {
                         setUser(response.data.user);
                         localStorage.setItem('user', JSON.stringify(response.data.user));
@@ -42,7 +47,7 @@ export const AuthProvider = ({ children }) => {
     }, [token]);
 
     const login = async (email, password) => {
-        const response = await axios.post('http://localhost:3000/api/auth/login', {
+        const response = await apiClient.post('/auth/login', {
             email,
             password
         });
@@ -59,7 +64,7 @@ export const AuthProvider = ({ children }) => {
     const register = async (name, email, password, reflectionDay, reflectionTime) => {
         console.log('AuthContext: register called');
         try {
-            const response = await axios.post('http://localhost:3000/api/auth/register', {
+            const response = await apiClient.post('/auth/register', {
                 name,
                 email,
                 password,
@@ -80,13 +85,6 @@ export const AuthProvider = ({ children }) => {
             console.error('AuthContext: Register API error', error);
             throw error;
         }
-    };
-
-    const logout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setToken(null);
-        setUser(null);
     };
 
     const updateUser = (userData) => {

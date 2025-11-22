@@ -2,7 +2,10 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AudioRecorder from '../components/AudioRecorder';
-import axios from 'axios';
+import AppHeader from '../components/common/AppHeader';
+import Button from '../components/common/Button';
+import EmptyState from '../components/common/EmptyState';
+import apiClient from '../api/apiClient';
 import '../styles/Dashboard.css';
 
 const Dashboard = () => {
@@ -31,10 +34,7 @@ const Dashboard = () => {
 
     const loadWeekStatus = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get(`http://localhost:3000/api/weeks?userId=${user.id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await apiClient.get(`/weeks?userId=${user.id}`);
 
             if (response.data.weeks && response.data.weeks.length > 0) {
                 // Find the week that contains today
@@ -54,10 +54,8 @@ const Dashboard = () => {
 
     const loadEntries = async (weekId) => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get(
-                `http://localhost:3000/api/entries?userId=${user.id}&weekId=${weekId}`,
-                { headers: { Authorization: `Bearer ${token}` } }
+            const response = await apiClient.get(
+                `/entries?userId=${user.id}&weekId=${weekId}`
             );
 
             setEntryCount(response.data.count || 0);
@@ -83,14 +81,11 @@ const Dashboard = () => {
 
     return (
         <div className="container">
-            <header>
-                <h1>📔 Audio Diary</h1>
-                <div className="user-info">
-                    <span>{user?.name}</span>
-                    <Link to="/settings" style={{ textDecoration: 'none', marginRight: '10px', fontSize: '1.2rem' }}>⚙️</Link>
-                    <button onClick={logout} className="btn-secondary">Logout</button>
-                </div>
-            </header>
+            <AppHeader title="📔 Audio Diary">
+                <span>{user?.name}</span>
+                <Link to="/settings" style={{ textDecoration: 'none', marginRight: '10px', fontSize: '1.2rem' }}>⚙️</Link>
+                <Button variant="secondary" onClick={logout}>Logout</Button>
+            </AppHeader>
 
             <main>
                 <div className="week-status">
@@ -106,20 +101,16 @@ const Dashboard = () => {
                         </div>
                     </div>
                     <div style={{ marginTop: '15px', textAlign: 'center' }}>
-                        <button
+                        <Button
+                            variant="secondary"
                             onClick={async () => {
                                 if (!confirm('Generate reflection for this week now? This is for testing purposes.')) return;
                                 try {
-                                    const token = localStorage.getItem('token');
-                                    const weeksRes = await axios.get(`http://localhost:3000/api/weeks?userId=${user.id}`, {
-                                        headers: { Authorization: `Bearer ${token}` }
-                                    });
+                                    const weeksRes = await apiClient.get(`/weeks?userId=${user.id}`);
                                     if (weeksRes.data.weeks.length > 0) {
                                         const weekId = weeksRes.data.weeks[0]._id;
                                         alert('Generating reflection... This may take a minute.');
-                                        await axios.post(`http://localhost:3000/api/weeks/${weekId}/generate-reflection`, {}, {
-                                            headers: { Authorization: `Bearer ${token}` }
-                                        });
+                                        await apiClient.post(`/weeks/${weekId}/generate-reflection`);
                                         alert('Reflection generated! Check the Reflections page.');
                                         loadWeekStatus();
                                     }
@@ -131,16 +122,11 @@ const Dashboard = () => {
                             style={{
                                 fontSize: '0.8rem',
                                 padding: '6px 12px',
-                                background: 'rgba(255,255,255,0.2)',
-                                border: '1px solid rgba(255,255,255,0.4)',
-                                color: 'white',
-                                borderRadius: '20px',
-                                cursor: 'pointer',
-                                backdropFilter: 'blur(5px)'
+                                borderRadius: '20px'
                             }}
                         >
                             ⚡ Generate Reflection (Dev)
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
@@ -150,7 +136,10 @@ const Dashboard = () => {
                     <h3>This Week's Entries</h3>
                     <div className="entries-list">
                         {entries.length === 0 ? (
-                            <p className="empty-state">No entries yet. Start recording to begin your week!</p>
+                            <EmptyState 
+                                message="No entries yet. Start recording to begin your week!"
+                                icon="🎙️"
+                            />
                         ) : (
                             entries.map(entry => {
                                 const date = new Date(entry.recordedAt);
@@ -181,7 +170,9 @@ const Dashboard = () => {
                 </div>
 
                 <div className="nav-section">
-                    <Link to="/reflections" className="btn-secondary">View Past Reflections</Link>
+                    <Link to="/reflections">
+                        <Button variant="secondary">View Past Reflections</Button>
+                    </Link>
                 </div>
             </main>
         </div>

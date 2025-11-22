@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import AppHeader from '../components/common/AppHeader';
+import Button from '../components/common/Button';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import EmptyState from '../components/common/EmptyState';
+import apiClient from '../api/apiClient';
 import '../styles/Reflections.css';
 
 const Reflections = () => {
@@ -17,10 +21,7 @@ const Reflections = () => {
 
     const loadWeeks = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get(`http://localhost:3000/api/weeks?userId=${user.id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await apiClient.get(`/weeks?userId=${user.id}`);
 
             setWeeks(response.data.weeks || []);
             setLoading(false);
@@ -32,10 +33,7 @@ const Reflections = () => {
 
     const viewWeek = async (weekId) => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await axios.get(`http://localhost:3000/api/weeks/${weekId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await apiClient.get(`/weeks/${weekId}`);
 
             setSelectedWeek(response.data.week);
             setEntries(response.data.entries || []);
@@ -50,25 +48,25 @@ const Reflections = () => {
     };
 
     if (loading) {
-        return <div className="loading">Loading reflections...</div>;
+        return <LoadingSpinner message="Loading reflections..." />;
     }
 
     return (
         <div className="container">
-            <header>
-                <h1>📔 Past Reflections</h1>
-                <div className="user-info">
-                    <Link to="/" className="btn-secondary">Back to Recording</Link>
-                    <button onClick={logout} className="btn-secondary">Logout</button>
-                </div>
-            </header>
+            <AppHeader title="📔 Past Reflections">
+                <Link to="/">
+                    <Button variant="secondary">Back to Recording</Button>
+                </Link>
+                <Button variant="secondary" onClick={logout}>Logout</Button>
+            </AppHeader>
 
             <main>
                 <div className="weeks-list">
                     {weeks.length === 0 ? (
-                        <p className="empty-state">
-                            No reflections yet. Complete your first week to see reflections here!
-                        </p>
+                        <EmptyState 
+                            message="No reflections yet. Complete your first week to see reflections here!"
+                            icon="📔"
+                        />
                     ) : (
                         weeks.map(week => {
                             const startDate = new Date(week.weekStart).toLocaleDateString('en-US', {

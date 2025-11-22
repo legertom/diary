@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import AppHeader from '../components/common/AppHeader';
+import Button from '../components/common/Button';
+import apiClient from '../api/apiClient';
 import '../styles/Settings.css';
 
 const Settings = () => {
@@ -53,10 +55,7 @@ const Settings = () => {
         setError(null);
 
         try {
-            const token = localStorage.getItem('token');
-            const response = await axios.put('http://localhost:3000/api/auth/settings', formData, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const response = await apiClient.put('/auth/settings', formData);
 
             setMessage(response.data.message);
 
@@ -80,12 +79,11 @@ const Settings = () => {
 
     return (
         <div className="container">
-            <header>
-                <h1>⚙️ Settings</h1>
-                <div className="user-info">
-                    <Link to="/" className="btn-secondary">Back to Dashboard</Link>
-                </div>
-            </header>
+            <AppHeader title="⚙️ Settings">
+                <Link to="/">
+                    <Button variant="secondary">Back to Dashboard</Button>
+                </Link>
+            </AppHeader>
 
             <main className="settings-main">
                 <div className="settings-card">
@@ -141,18 +139,18 @@ const Settings = () => {
                         {error && <div className="error-message">{error}</div>}
 
                         <div className="form-actions">
-                            <button type="submit" className="btn-primary" disabled={loading}>
+                            <Button type="submit" variant="primary" disabled={loading}>
                                 {loading ? 'Saving...' : 'Save Changes'}
-                            </button>
+                            </Button>
                         </div>
                     </form>
                 </div>
 
                 <div className="danger-zone">
                     <h3>Account Actions</h3>
-                    <button onClick={logout} className="btn-secondary logout-btn">
+                    <Button variant="secondary" onClick={logout} className="logout-btn">
                         Log Out
-                    </button>
+                    </Button>
                 </div>
             </main>
         </div>
