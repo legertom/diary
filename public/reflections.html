@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Diary - Reflections</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>📔 Past Reflections</h1>
+            <div class="user-info">
+                <a href="/index.html" class="btn-secondary">Back to Recording</a>
+                <button onclick="logout()" class="btn-secondary">Logout</button>
+            </div>
+        </header>
+
+        <main>
+            <div id="weeksList" class="weeks-list">
+                <p class="loading">Loading reflections...</p>
+            </div>
+
+            <!-- Week Detail Modal -->
+            <div id="weekModal" class="modal hidden">
+                <div class="modal-content">
+                    <button class="modal-close" onclick="closeWeekModal()">×</button>
+
+                    <div id="weekDetail">
+                        <!-- Week details will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/reflections.js"></script>
+</body>
+
+</html>

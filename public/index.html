@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Diary - Record</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>📔 Audio Diary</h1>
+      <div class="user-info">
+        <span id="userName"></span>
+        <button onclick="logout()" class="btn-secondary">Logout</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Week Status -->
+      <div class="week-status">
+        <h2>This Week</h2>
+        <div class="stats">
+          <div class="stat">
+            <span class="stat-label">Entries</span>
+            <span class="stat-value" id="entryCount">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Next Reflection</span>
+            <span class="stat-value" id="nextReflection">Loading...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recording Interface -->
+      <div class="recording-section">
+        <div class="recording-controls">
+          <button id="recordBtn" class="btn-primary btn-record">
+            <svg class="waveform-icon" width="24" height="24" viewBox="0 0 24 24" fill="none"
+              xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="8" width="2" height="8" rx="1" fill="white" />
+              <rect x="7" y="5" width="2" height="14" rx="1" fill="white" />
+              <rect x="11" y="2" width="2" height="20" rx="1" fill="white" />
+              <rect x="15" y="6" width="2" height="12" rx="1" fill="white" />
+              <rect x="19" y="9" width="2" height="6" rx="1" fill="white" />
+            </svg>
+            <span class="record-text">RECORD</span>
+          </button>
+
+          <div id="recordingStatus" class="recording-status hidden">
+            <div class="pulse"></div>
+            <span id="recordingTime">00:00</span>
+          </div>
+        </div>
+
+        <!-- Audio Visualizer -->
+        <div id="visualizerContainer" class="visualizer-container hidden">
+          <canvas id="visualizer"></canvas>
+        </div>
+
+        <div id="locationStatus" class="location-status hidden">
+          <span id="locationIcon">📍</span>
+          <span id="locationText">Location captured</span>
+        </div>
+      </div>
+
+      <!-- Recent Entries -->
+      <div class="entries-section">
+        <h3>This Week's Entries</h3>
+        <div id="entriesList" class="entries-list">
+          <p class="empty-state">No entries yet. Start recording to begin your week!</p>
+        </div>
+      </div>
+
+      <!-- View Reflections Link -->
+      <div class="nav-section">
+        <a href="/reflections.html" class="btn-secondary">View Past Reflections</a>
+      </div>
+    </main>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+
+</html>
