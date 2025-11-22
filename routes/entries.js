@@ -58,7 +58,7 @@ router.post('/', upload.single('audio'), async (req, res) => {
         if (location) {
             const loc = typeof location === 'string' ? JSON.parse(location) : location;
 
-            if (loc.latitude && loc.longitude) {
+            if (loc.latitude !== undefined && loc.longitude !== undefined) {
                 // Validate coordinates
                 if (loc.latitude < -90 || loc.latitude > 90) {
                     return res.status(400).json({ error: 'Invalid latitude' });
@@ -254,18 +254,6 @@ function getWeekNumber(date) {
     return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
 }
 
-function getWeekBounds(date) {
-    const d = new Date(date);
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
-    const startDate = new Date(d.setDate(diff));
-    startDate.setHours(0, 0, 0, 0);
 
-    const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + 6);
-    endDate.setHours(23, 59, 59, 999);
-
-    return { startDate, endDate };
-}
 
 module.exports = router;
