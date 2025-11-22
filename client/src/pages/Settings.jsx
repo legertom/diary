@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AppHeader from '../components/common/AppHeader';
 import Button from '../components/common/Button';
@@ -7,13 +7,12 @@ import FormInput from '../components/forms/FormInput';
 import FormSelect from '../components/forms/FormSelect';
 import ErrorMessage from '../components/forms/ErrorMessage';
 import SuccessMessage from '../components/forms/SuccessMessage';
-import apiClient from '../api/apiClient';
+import useUserSettings from '../hooks/useUserSettings';
 import '../styles/Settings.css';
 
 const Settings = () => {
-    const { user, logout, updateUser } = useAuth();
-    const navigate = useNavigate();
-    const [loading, setLoading] = useState(false);
+    const { logout, user } = useAuth();
+    const { updateSettings, loading, error: settingsError } = useUserSettings();
     const [message, setMessage] = useState(null);
     const [error, setError] = useState(null);
 
@@ -54,30 +53,19 @@ const Settings = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
         setMessage(null);
         setError(null);
 
         try {
-            const response = await apiClient.put('/auth/settings', formData);
-
-            setMessage(response.data.message);
-
-            // Update local user state immediately
-            updateUser(response.data.user);
+            const response = await updateSettings(formData);
+            setMessage(response.message);
 
             // If schedule changed, show explanation
-            if (response.data.message.includes('adjusted')) {
+            if (response.message.includes('adjusted')) {
                 alert('Your reflection schedule has been updated. Your current week has been adjusted to match the new cycle.');
             }
-
-            // No need to reload anymore!
-
         } catch (err) {
-            console.error('Settings update error:', err);
-            setError(err.response?.data?.error || 'Failed to update settings');
-        } finally {
-            setLoading(false);
+            setError(settingsError || 'Failed to update settings');
         }
     };
 
@@ -128,7 +116,7 @@ const Settings = () => {
                         </div>
 
                         <SuccessMessage message={message} />
-                        <ErrorMessage message={error} />
+                        <ErrorMessage message={error || settingsError} />
 
                         <div className="form-actions">
                             <Button type="submit" variant="primary" disabled={loading}>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AppHeader from '../components/common/AppHeader';
@@ -8,46 +8,22 @@ import EmptyState from '../components/common/EmptyState';
 import Modal from '../components/common/Modal';
 import WeekCard from '../components/weeks/WeekCard';
 import WeekDetail from '../components/weeks/WeekDetail';
-import apiClient from '../api/apiClient';
+import useWeeks from '../hooks/useWeeks';
+import useWeekDetail from '../hooks/useWeekDetail';
 import '../styles/Reflections.css';
 
 const Reflections = () => {
     const { user, logout } = useAuth();
-    const [weeks, setWeeks] = useState([]);
-    const [selectedWeek, setSelectedWeek] = useState(null);
-    const [entries, setEntries] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { weeks, loading } = useWeeks(user?.id);
+    const [selectedWeekId, setSelectedWeekId] = useState(null);
+    const { week: selectedWeek, entries, loading: detailLoading } = useWeekDetail(selectedWeekId);
 
-    useEffect(() => {
-        loadWeeks();
-    }, []);
-
-    const loadWeeks = async () => {
-        try {
-            const response = await apiClient.get(`/weeks?userId=${user.id}`);
-
-            setWeeks(response.data.weeks || []);
-            setLoading(false);
-        } catch (error) {
-            console.error('Error loading weeks:', error);
-            setLoading(false);
-        }
-    };
-
-    const viewWeek = async (weekId) => {
-        try {
-            const response = await apiClient.get(`/weeks/${weekId}`);
-
-            setSelectedWeek(response.data.week);
-            setEntries(response.data.entries || []);
-        } catch (error) {
-            console.error('Error loading week detail:', error);
-        }
+    const viewWeek = (weekId) => {
+        setSelectedWeekId(weekId);
     };
 
     const closeModal = () => {
-        setSelectedWeek(null);
-        setEntries([]);
+        setSelectedWeekId(null);
     };
 
     if (loading) {
@@ -81,8 +57,12 @@ const Reflections = () => {
                     )}
                 </div>
 
-                <Modal isOpen={!!selectedWeek} onClose={closeModal}>
-                    {selectedWeek && <WeekDetail week={selectedWeek} entries={entries} />}
+                <Modal isOpen={!!selectedWeekId} onClose={closeModal}>
+                    {detailLoading ? (
+                        <LoadingSpinner message="Loading week details..." />
+                    ) : (
+                        selectedWeek && <WeekDetail week={selectedWeek} entries={entries} />
+                    )}
                 </Modal>
             </main>
         </div>

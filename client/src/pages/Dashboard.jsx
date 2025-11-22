@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import AudioRecorder from '../components/AudioRecorder';
@@ -6,84 +5,40 @@ import AppHeader from '../components/common/AppHeader';
 import Button from '../components/common/Button';
 import WeekStatus from '../components/dashboard/WeekStatus';
 import EntriesList from '../components/entries/EntriesList';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import useWeeks from '../hooks/useWeeks';
+import useEntries from '../hooks/useEntries';
 import apiClient from '../api/apiClient';
 import '../styles/Dashboard.css';
 
 const Dashboard = () => {
     const { user, logout } = useAuth();
-    const [entries, setEntries] = useState([]);
-    const [entryCount, setEntryCount] = useState(0);
-    const [nextReflection, setNextReflection] = useState('');
-
-    useEffect(() => {
-        if (user) {
-            loadWeekStatus();
-            updateNextReflection();
-        }
-    }, [user]);
-
-    const updateNextReflection = () => {
-        if (!user?.nextReflectionAt) return;
-
-        const date = new Date(user.nextReflectionAt);
-        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        const dayName = days[date.getDay()];
-        const time = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-
-        setNextReflection(`${dayName} at ${time}`);
-    };
-
-    const loadWeekStatus = async () => {
-        try {
-            const response = await apiClient.get(`/weeks?userId=${user.id}`);
-
-            if (response.data.weeks && response.data.weeks.length > 0) {
-                // Find the week that contains today
-                const now = new Date();
-                const currentWeek = response.data.weeks.find(week => {
-                    const start = new Date(week.weekStart);
-                    const end = new Date(week.weekEnd);
-                    return now >= start && now <= end;
-                }) || response.data.weeks[0]; // Fallback to most recent if not found
-
-                await loadEntries(currentWeek._id);
-            }
-        } catch (error) {
-            console.error('Error loading week status:', error);
-        }
-    };
-
-    const loadEntries = async (weekId) => {
-        try {
-            const response = await apiClient.get(
-                `/entries?userId=${user.id}&weekId=${weekId}`
-            );
-
-            setEntryCount(response.data.count || 0);
-            setEntries(response.data.entries || []);
-        } catch (error) {
-            console.error('Error loading entries:', error);
-        }
-    };
+    const { weeks, getCurrentWeek, refetch: refetchWeeks } = useWeeks(user?.id);
+    const currentWeek = getCurrentWeek();
+    const { entries, entryCount, refetch: refetchEntries } = useEntries(
+        currentWeek?._id,
+        user?.id
+    );
 
     const handleRecordingComplete = async () => {
         console.log('🔄 Recording complete, refreshing dashboard...');
         // Small delay to ensure database has been updated
         await new Promise(resolve => setTimeout(resolve, 500));
-        await loadWeekStatus();
+        refetchWeeks();
+        refetchEntries();
         console.log('✅ Dashboard refreshed');
     };
 
     const handleGenerateReflection = async () => {
         if (!confirm('Generate reflection for this week now? This is for testing purposes.')) return;
         try {
-            const weeksRes = await apiClient.get(`/weeks?userId=${user.id}`);
-            if (weeksRes.data.weeks.length > 0) {
-                const weekId = weeksRes.data.weeks[0]._id;
+            if (weeks.length > 0) {
+                const weekId = weeks[0]._id;
                 alert('Generating reflection... This may take a minute.');
                 await apiClient.post(`/weeks/${weekId}/generate-reflection`);
                 alert('Reflection generated! Check the Reflections page.');
-                loadWeekStatus();
+                refetchWeeks();
+                refetchEntries();
             }
         } catch (err) {
             console.error(err);
