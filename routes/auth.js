@@ -149,6 +149,15 @@ router.put('/settings', authenticateToken, async (req, res) => {
             return res.status(400).json({ error: 'Invalid reflection time (must be HH:MM)' });
         }
 
+        // Validate timezone
+        const { DateTime } = require('luxon');
+        if (timezone) {
+            const dt = DateTime.now().setZone(timezone);
+            if (!dt.isValid) {
+                return res.status(400).json({ error: 'Invalid timezone' });
+            }
+        }
+
         console.log(`Settings update request for ${user.email}:`, {
             current: { day: user.reflectionDay, time: user.reflectionTime, tz: user.timezone },
             new: { day: newReflectionDay, time: reflectionTime, tz: timezone }

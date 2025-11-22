@@ -73,6 +73,14 @@ router.post('/:id/generate-reflection', async (req, res) => {
             return res.status(400).json({ error: 'Week reflection already complete' });
         }
 
+        if (week.status === 'processing') {
+            return res.status(400).json({ error: 'Week reflection is already being processed' });
+        }
+
+        if (week.status === 'error') {
+            return res.status(400).json({ error: 'Week reflection is in error state' });
+        }
+
         // Process the week's reflection
         await processWeekReflection(week._id);
 
